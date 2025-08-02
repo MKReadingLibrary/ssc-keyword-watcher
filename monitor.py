@@ -11,17 +11,22 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 
 def send_telegram_message():
-    message = f"✅ Keyword '{KEYWORD}' found on the SSC NR website!"
-    telegram_url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    payload = {"chat_id": CHAT_ID, "text": message}
+    message = (
+        f"📢 *Result for {KEYWORD} has been published!*\n"
+        f"[👉 Click here to view result]({URL})"
+    )
+    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+    payload = {
+        "chat_id": CHAT_ID,
+        "text": message,
+        "parse_mode": "Markdown"
+    }
     try:
-        response = requests.post(telegram_url, data=payload)
-        if response.ok:
-            print("Message sent!")
-        else:
-            print("Failed to send message:", response.text)
+        response = requests.post(url, data=payload)
+        print("✅ Message sent!") if response.ok else print("❌ Telegram error:", response.text)
     except Exception as e:
-        print("Telegram error:", e)
+        print("❌ Exception:", e)
+
 
 def main():
     try:
