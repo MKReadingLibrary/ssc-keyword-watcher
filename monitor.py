@@ -6,7 +6,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Config
 URL = "https://sscnr.nic.in/newlook/site/ResultPhaseXI_2023_Examination.html"
-KEYWORD = "NR13123"
+KEYWORD = "NR16323"
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 
