@@ -9,7 +9,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Configuration
 URL = "https://sscnr.nic.in/newlook/site/ResultPhaseXI_2023_Examination.html"
-KEYWORD = "NR13123"
+KEYWORD = "NR16323"
 
 FROM_EMAIL = os.getenv("EMAIL_SENDER")
 PASSWORD = os.getenv("EMAIL_PASSWORD")
