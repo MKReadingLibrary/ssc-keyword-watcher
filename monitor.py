@@ -1,45 +1,42 @@
-import os
 import requests
-import urllib3
+from bs4 import BeautifulSoup
+from datetime import datetime
+import os
+import asyncio
+from telegram import Bot
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+BOT_TOKEN = os.getenv('BOT_TOKEN')
+CHAT_ID = os.getenv('CHAT_ID')
 
-# Configuration
-URL = "https://sscnr.nic.in/newlook/site/ResultPhaseXI_2023_Examination.html"
-KEYWORD = "NR13123"
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-CHAT_ID = os.getenv("CHAT_ID")
+bot = Bot(token=BOT_TOKEN)
 
-def send_telegram_message():
-    message = (
-        f"📢 *Result for {KEYWORD} has been published!*\n"
-        f"[👉 Click here to view result]({URL})"
-    )
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    payload = {
-        "chat_id": CHAT_ID,
-        "text": message,
-        "parse_mode": "Markdown"
-    }
+async def check_ssc_updates():
+    url = "https://ssc.gov.in/home/notice-board"
+    today = datetime.now().strftime('%d-%m-%Y')
+
     try:
-        response = requests.post(url, data=payload)
-        if response.ok:
-            print("✅ Message sent!")
-        else:
-            print("❌ Telegram error:", response.text)
-    except Exception as e:
-        print("❌ Exception:", e)
+        response = requests.get(url, timeout=10)
+        soup = BeautifulSoup(response.text, 'html.parser')
 
-def main():
-    try:
-        print("🔍 Checking page...")
-        response = requests.get(URL, verify=False, timeout=20)
-        if KEYWORD in response.text:
-            send_telegram_message()
-        else:
-            print("❌ Keyword not found.")
+        notices = soup.select("ul.list-unstyled li")
+
+        for notice in notices:
+            date_tag = notice.select_one('div.card-date span')
+            title_tag = notice.select_one('div.card-content a')
+            if not date_tag or not title_tag:
+                continue
+
+            notice_date = date_tag.text.strip()
+            title = title_tag.text.strip()
+            link = title_tag['href']
+            full_link = f"https://ssc.gov.in{link}" if link.startswith('/') else link
+
+            if notice_date == today:
+                message = f"🆕 *SSC Notice* ({today}):\n*{title}*\n👉 [Click to view]({full_link})"
+                await bot.send_message(chat_id=CHAT_ID, text=message, parse_mode="Markdown")
+                return
     except Exception as e:
-        print("❌ Error fetching:", e)
+        print("Error:", e)
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(check_ssc_updates())
